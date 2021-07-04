@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 public class Dispatcher implements Filter {
     @Override
@@ -52,7 +53,19 @@ public class Dispatcher implements Filter {
 
             if (requestMapping.value().equals(endPoint)) {
                 try {
-                    method.invoke(userController);
+                    Parameter[] params = method.getParameters();
+                    String path = "/";
+                    if (params.length != 0) {
+//                        System.out.println("params[0].getType(): "+params[0].getType()); // class를 알면 객체를 생성할 수 있다.
+                        Object dtoInstance = params[0].getType().newInstance();
+                    }else{
+                        path = (String)method.invoke(userController);
+                    }
+
+
+                    // 내부에서 실행하기 때문에 필터를 안탄다!!
+                    RequestDispatcher dispatcher = request.getRequestDispatcher(path);
+                    dispatcher.forward(request,response);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
